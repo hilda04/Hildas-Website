@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Risk KPI Board Case Study | Hilda Machando</title>
+  <meta name="description" content="Business‑impact weighted IT risk KPIs with auto status from live data sources. A case study by Hilda Machando." />
+  <link rel="canonical" href="https://example.com/case-studies/risk-kpi-board" />
+
+  <!-- Open Graph / Twitter for rich link previews -->
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Risk KPI Board Case Study" />
+  <meta property="og:description" content="Business‑impact weighted IT risk KPIs with auto status from data sources." />
+  <meta property="og:url" content="https://example.com/case-studies/risk-kpi-board" />
+  <meta property="og:image" content="https://example.com/assets/risk-kpi-hero.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Risk KPI Board Case Study" />
+  <meta name="twitter:description" content="Business‑impact weighted IT risk KPIs with auto status from data sources." />
+  <meta name="twitter:image" content="https://example.com/assets/risk-kpi-hero.png" />
+
+  <!-- Structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Risk KPI Board Case Study",
+    "about": "Business‑impact weighted IT risk KPIs with auto status from live data sources",
+    "author": {
+      "@type": "Person",
+      "name": "Hilda Machando"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Hilda Machando — Cloud Security"
+    },
+    "datePublished": "2025-09-30",
+    "inLanguage": "en"
+  }
+  </script>
+
+  <style>
+    :root {
+      --bg: #0b1020;
+      --card: #101735;
+      --muted: #9fb0ff;
+      --text: #e7ecff;
+      --primary: #3578ff; /* brand blue */
+      --accent: #ff2f7a;  /* pink accent */
+      --success: #1db954;
+      --warning: #ffb020;
+      --danger: #ff4d4f;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 20px;
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f6f8ff;
+        --card: #ffffff;
+        --muted: #4257b2;
+        --text: #22243a;
+        --shadow: 0 10px 30px rgba(25,42,80,.08);
+      }
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+      background: radial-gradient(1200px 600px at 80% -10%, rgba(53,120,255,.25), transparent 60%),
+                  radial-gradient(800px 500px at -10% 10%, rgba(255,47,122,.18), transparent 55%),
+                  var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+    }
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 28px; }
+
+    header.site {
+      display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 6px 0 18px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .logo {
+      width: 40px; height: 40px; border-radius: 12px; background:
+        linear-gradient(135deg, var(--primary), var(--accent));
+      box-shadow: var(--shadow);
+    }
+    .brand h1 { font-size: 1.05rem; margin: 0; letter-spacing: .2px; }
+    .nav a { margin-left: 14px; font-size: .95rem; opacity: .9; }
+
+    .hero {
+      display: grid; grid-template-columns: 1.2fr .8fr; gap: 22px; align-items: center;
+      background: linear-gradient(180deg, rgba(17,24,56,.10), rgba(17,24,56,.25));
+      border: 1px solid rgba(120,140,255,.18); border-radius: var(--radius);
+      padding: 28px; box-shadow: var(--shadow);
+    }
+    .hero h2 { font-size: clamp(1.6rem, 2.2vw + 1rem, 2.4rem); margin: 0 0 10px; }
+    .subtitle { color: var(--muted); font-weight: 500; margin: 0 0 14px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+    .chip { padding: 6px 10px; border-radius: 999px; background: rgba(53,120,255,.12); border: 1px solid rgba(120,140,255,.25); font-size: .85rem; }
+    .chip.pink { background: rgba(255,47,122,.12); border-color: rgba(255,47,122,.3); }
+
+    .panel {
+      background: var(--card); border: 1px solid rgba(120,140,255,.18);
+      border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow); margin-top: 22px;
+    }
+    .panel h3 { margin: 0 0 8px; font-size: 1.15rem; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    @media (max-width: 900px) { .hero { grid-template-columns: 1fr; } .grid-2 { grid-template-columns: 1fr; } }
+
+    .kpi-table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+    .kpi-table th, .kpi-table td { padding: 12px 10px; border-bottom: 1px dashed rgba(120,140,255,.25); text-align: left; }
+    .kpi-table th { font-size: .8rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
+    .status {
+      display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 999px; font-weight: 600; font-size: .9rem; border: 1px solid transparent;
+    }
+    .status.green { background: rgba(29,185,84,.15); color: #03ad41; border-color: rgba(29,185,84,.35); }
+    .status.amber { background: rgba(255,176,32,.15); color: #f77f07; border-color: rgba(255,176,32,.35); }
+    .status.red { background: rgba(255,77,79,.16); color: #e00206; border-color: rgba(255,77,79,.35); }
+
+    .progress { height: 10px; width: 100%; background: rgba(120,140,255,.18); border-radius: 999px; overflow: hidden; }
+    .bar { height: 100%; width: var(--w,0%); background: linear-gradient(90deg, var(--primary), var(--accent)); box-shadow: inset 0 0 8px rgba(0,0,0,.3); }
+
+    details { margin-top: 12px; }
+    details summary { cursor: pointer; font-weight: 600; }
+    details .content { margin-top: 10px; }
+
+    .legend { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+    .legend .status { font-size: .82rem; font-weight: 700; }
+
+    .cta {
+      display: flex; flex-wrap: wrap; gap: 12px; margin-top: 18px;
+    }
+    .btn { display: inline-flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 14px; font-weight: 700; border: 1px solid rgba(120,140,255,.35); }
+    .btn.primary { background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; border: none; box-shadow: var(--shadow); }
+    .btn.ghost { color: var(--text); background: rgba(255,255,255,.02); }
+
+    footer { color: var(--muted); font-size: .9rem; margin: 26px 0 10px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="site" aria-label="Site header">
+      <div class="brand" aria-label="Brand">
+        <div class="logo" aria-hidden="true"></div>
+        <h1>Hilda Machando · Cloud Security</h1>
+      </div>
+      <nav class="nav" aria-label="Breadcrumb">
+        <a href="/">Home</a>
+        <a href="/case-studies">Case Studies</a>
+      </nav>
+    </header>
+
+    <section class="hero" aria-labelledby="title">
+      <div>
+        <h2 id="title">Risk KPI Board Case Study</h2>
+        <p class="subtitle">Business‑impact weighted IT risk KPIs with auto status from live data sources</p>
+        <div class="chips" role="list">
+          <span class="chip" role="listitem">Risk Governance</span>
+          <span class="chip" role="listitem">Data Automation</span>
+          <span class="chip pink" role="listitem">Executive Reporting</span>
+          <span class="chip" role="listitem">ServiceNow · AWS · Security Hub</span>
+        </div>
+        <div class="cta" aria-label="Calls to action">
+          <a class="btn primary" href="#contact">Work with me</a>
+          <a class="btn ghost" href="#dashboard">Jump to dashboard</a>
+        </div>
+      </div>
+      <div class="panel" aria-label="At-a-glance">
+        <h3>At a glance</h3>
+        <p>
+          Static reports hide what matters. This board applies business‑impact weights to each KPI and auto‑updates from sources like ServiceNow, AWS Security Hub, Qualys, and Cost Explorer. Leaders see <strong>real‑time risk</strong> in <strong>business language</strong>.
+        </p>
+        <div class="legend" aria-label="Status legend">
+          <span class="status green">🟢 Green ≥ 85%</span>
+          <span class="status amber">🟠 Amber 70–84%</span>
+          <span class="status red">🔴 Red &lt; 70%</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="background">
+      <h3 id="background">Background</h3>
+      <p>
+        Many organizations track IT risk via spreadsheets and siloed tools. They’re manually updated, quickly stale, and rarely show which risks actually threaten the business. The Risk KPI Board solves this by weighting KPIs by system criticality and pulling data live from operational sources.
+      </p>
+    </section>
+
+    <section class="panel grid-2" aria-labelledby="objectives">
+      <div>
+        <h3 id="objectives">Objectives</h3>
+        <ul>
+          <li>Provide a centralized, real‑time risk view</li>
+          <li>Weight KPIs by business criticality</li>
+          <li>Automate data ingestion from ServiceNow, AWS, and scanners</li>
+          <li>Tell a business‑aligned risk story for executives</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Approach</h3>
+        <ol>
+          <li>Define risk KPIs (Patch %, MTTR, Change Success, SLA Breach %, Cost anomalies)</li>
+          <li>Apply business weights (Core Banking 40%, Digital 30%, Productivity 20%, Peripheral 10%)</li>
+          <li>Automate data feeds (ServiceNow/Jira, Security Hub/Qualys, Cost Explorer, CloudWatch/Splunk)</li>
+          <li>Compute weighted scores and auto‑status (Green/Amber/Red)</li>
+        </ol>
+      </div>
+    </section>
+
+    <section id="dashboard" class="panel" aria-labelledby="example">
+      <h3 id="example">Example Dashboard (sample data)</h3>
+
+      <table class="kpi-table" role="table" aria-describedby="example">
+        <thead>
+          <tr>
+            <th scope="col">Risk Domain</th>
+            <th scope="col">KPI</th>
+            <th scope="col">Data Source</th>
+            <th scope="col">Weight</th>
+            <th scope="col">Current Value</th>
+            <th scope="col">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Security Compliance</td>
+            <td>Patch Compliance (Critical Apps)</td>
+            <td>Qualys / Security Hub</td>
+            <td>40%</td>
+            <td>
+              82%
+              <div class="progress" aria-hidden="true"><div class="bar" style="--w:82%"></div></div>
+            </td>
+            <td><span class="status amber">🟠 Amber</span></td>
+          </tr>
+          <tr>
+            <td>Incident Management</td>
+            <td>MTTR (Hours)</td>
+            <td>ServiceNow</td>
+            <td>20%</td>
+            <td>
+              2 hrs
+              <div class="progress" aria-hidden="true"><div class="bar" style="--w:90%"></div></div>
+            </td>
+            <td><span class="status green">🟢 Green</span></td>
+          </tr>
+          <tr>
+            <td>Change Management</td>
+            <td>Change Success Rate</td>
+            <td>ServiceNow</td>
+            <td>15%</td>
+            <td>
+              89%
+              <div class="progress" aria-hidden="true"><div class="bar" style="--w:89%"></div></div>
+            </td>
+            <td><span class="status green">🟢 Green</span></td>
+          </tr>
+          <tr>
+            <td>Cloud &amp; Infra</td>
+            <td>Non‑Prod vs Prod AWS Costs</td>
+            <td>AWS Cost Explorer</td>
+            <td>15%</td>
+            <td>
+              30%
+              <div class="progress" aria-hidden="true"><div class="bar" style="--w:30%"></div></div>
+            </td>
+            <td><span class="status red">🔴 Red</span></td>
+          </tr>
+          <tr>
+            <td>IT Ops Stability</td>
+            <td>SLA Breaches</td>
+            <td>Jira</td>
+            <td>10%</td>
+            <td>
+              71%
+              <div class="progress" aria-hidden="true"><div class="bar" style="--w:71%"></div></div>
+            </td>
+            <td><span class="status amber">🟠 Amber</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <details>
+        <summary>See data flow &amp; automation notes</summary>
+        <div class="content">
+          <p><strong>Ingestion:</strong> API pulls from ServiceNow/Jira (incidents, SLAs), AWS Security Hub/Qualys (vulns/compliance), Cost Explorer (cost), CloudWatch/Splunk (stability).</p>
+          <p><strong>Processing:</strong> Normalize each KPI to 0–100, apply business weights by system criticality, compute overall domain and board scores.</p>
+          <p><strong>Status rules:</strong> Green ≥ 85%, Amber 70–84%, Red &lt; 70% (configurable per KPI).</p>
+          <p><strong>Refresh:</strong> Hourly ETL/Functions (e.g., AWS Lambda + EventBridge) with lineage &amp; timestamps for audit.</p>
+        </div>
+      </details>
+    </section>
+
+    <section class="panel grid-2" aria-labelledby="impact">
+      <div>
+        <h3 id="impact">Business Impact</h3>
+        <p>
+          Executives get a single, trusted view of risk aligned to revenue and reputation. Automated updates highlight issues before board meetings. Continuous evidence and timestamps make audits straightforward, and the language shifts from technical metrics to measurable business risk.
+        </p>
+      </div>
+      <div>
+        <h3>Lessons Learned</h3>
+        <p>
+          Business weighting focuses attention where it matters most. Automation removes manual effort and delay. Clear visuals and thresholds drive ownership across teams.
+        </p>
+      </div>
+    </section>
+
+    <section id="contact" class="panel" aria-labelledby="cta">
+      <h3 id="cta">Let’s build your Risk KPI Board</h3>
+      <p>
+        I can tailor this approach to your stack (ServiceNow, AWS, Azure, GCP). Get a production‑ready dashboard with API integrations, audit trails, and board‑level visuals.
+      </p>
+      <div class="cta">
+        <a class="btn primary" href="mailto:hildamachando4@gmail.com">Email Hilda</a>
+        <a class="btn ghost" href="https://www.linkedin.com/in/hilda-machando-43277b179/">Connect on LinkedIn</a>
+      </div>
+    </section>
+
+    <footer>
+      © <span id="y"></span> Hilda Machando. All rights reserved.
+    </footer>
+  </div>
+
+  <script>
+    // Set year without blocking rendering
+    document.getElementById('y').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
