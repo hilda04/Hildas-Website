@@ -459,11 +459,9 @@
     (function(){
       const el = document.getElementById('visitor-count');
       if(!el) return;
-      // TODO: Replace with your deployed API endpoint (enable CORS!).
-      // Example: https://abc123.execute-api.af-south-1.amazonaws.com/prod/counter
       const COUNTER_API = 'https://bvtfd619y9.execute-api.us-east-1.amazonaws.com/prod/counter';
       // A stable partition key for your site/app. Adjust as desired.
-      const SITE_ID = (hildaswebsite.com || 'local') + '/portfolio';
+      const SITE_ID = (hildaswebsite.com || 'local') + '/';
 
       // Throttle increments per device/day. Remove if you want to count every page load.
       const stampKey = 'vc-stamp';
@@ -490,6 +488,7 @@
   </script>
 </body>
 </html>
+
 
 
 
