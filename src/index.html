@@ -372,6 +372,7 @@
     (function(){
       const el = document.getElementById('visitor-count');
       if(!el) return;
+
       const COUNTER_API = 'https://bvtfd619y9.execute-api.us-east-1.amazonaws.com/prod/counter';
       // A stable partition key for your site/app. Adjust as desired.
       const host = location.hostname || 'local';
@@ -412,10 +413,13 @@
           if(shouldHit) localStorage.setItem(stampKey, today);
         })
         .catch(() => { el.textContent = '—'; });
+
     })();
   </script>
 </body>
 </html>
+
+
 
 
 
