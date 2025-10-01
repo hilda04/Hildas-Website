@@ -33,7 +33,13 @@ function initVisitorCounter() {
   // Set this as an Amplify env var (step 7) or hardcode temporarily
   const COUNTER_API = window.COUNTER_API_URL || 'https://bvtfd619y9.execute-api.us-east-1.amazonaws.com/prod/counter';
 
-  const SITE_ID = (location.hostname || 'local') + location.pathname; // counts per page
+  const host = location.hostname || 'local';
+  let path = location.pathname || '/';
+  path = path.replace(/index\.html$/i, '');
+  if (!path) path = '/';
+  if (!path.startsWith('/')) path = `/${path}`;
+  if (path.length > 1) path = path.replace(/\/+$/, '');
+  const SITE_ID = `${host}${path}`; // counts per page
   const stampKey = 'vc-stamp-' + SITE_ID;
   const today = new Date().toISOString().slice(0,10);
   const shouldHit = localStorage.getItem(stampKey) !== today;
@@ -44,10 +50,19 @@ function initVisitorCounter() {
   fetch(url, opts)
     .then(r => r.json())
     .then(d => {
-      const value = (typeof d.count === 'number') ? d.count
-                 : (typeof d.value === 'number') ? d.value
-                 : (typeof d.total === 'number') ? d.total
-                 : (d && d.Item && typeof d.Item.count === 'number') ? d.Item.count
+      let payload = d;
+      if (typeof payload === 'string') {
+        try { payload = JSON.parse(payload); } catch (_) { /* noop */ }
+      }
+      if (payload && typeof payload.body === 'string') {
+        try { payload = JSON.parse(payload.body); } catch (_) { /* noop */ }
+      } else if (payload && payload.body && typeof payload.body === 'object') {
+        payload = payload.body;
+      }
+      const value = (typeof payload.count === 'number') ? payload.count
+                 : (typeof payload.value === 'number') ? payload.value
+                 : (typeof payload.total === 'number') ? payload.total
+                 : (payload && payload.Item && typeof payload.Item.count === 'number') ? payload.Item.count
                  : null;
       el.textContent = (typeof value === 'number') ? value.toLocaleString() : '—';
       if (shouldHit) localStorage.setItem(stampKey, today);
