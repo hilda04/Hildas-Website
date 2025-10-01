@@ -470,7 +470,7 @@
       const SITE_ID = `${host}${path}`;
 
       // Throttle increments per device/day. Remove if you want to count every page load.
-      const stampKey = 'vc-stamp';
+      const stampKey = `vc-stamp-${SITE_ID}`;
       const today = new Date().toISOString().slice(0,10);
       const shouldHit = localStorage.getItem(stampKey) !== today;
 
@@ -480,11 +480,20 @@
       fetch(url, opts)
         .then(r => r.json())
         .then(d => {
+          let payload = d;
+          if (typeof payload === 'string') {
+            try { payload = JSON.parse(payload); } catch (_) { /* noop */ }
+          }
+          if (payload && typeof payload.body === 'string') {
+            try { payload = JSON.parse(payload.body); } catch (_) { /* noop */ }
+          } else if (payload && payload.body && typeof payload.body === 'object') {
+            payload = payload.body;
+          }
           // Try common response shapes: {count}, {value}, {total}, {Item:{count}}
-          const value = (typeof d.count === 'number') ? d.count
-                       : (typeof d.value === 'number') ? d.value
-                       : (typeof d.total === 'number') ? d.total
-                       : (d && d.Item && typeof d.Item.count === 'number') ? d.Item.count
+          const value = (typeof payload.count === 'number') ? payload.count
+                       : (typeof payload.value === 'number') ? payload.value
+                       : (typeof payload.total === 'number') ? payload.total
+                       : (payload && payload.Item && typeof payload.Item.count === 'number') ? payload.Item.count
                        : null;
           el.textContent = (typeof value === 'number') ? value.toLocaleString() : '—';
           if(shouldHit) localStorage.setItem(stampKey, today);
@@ -494,6 +503,7 @@
   </script>
 </body>
 </html>
+
 
 
 
