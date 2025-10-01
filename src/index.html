@@ -59,18 +59,39 @@
     @keyframes fade{from{opacity:.5; transform:translateY(4px)} to{opacity:1; transform:none}}
 
     /* Home */
-    .home{display:grid; place-items:center; text-align:center; padding: clamp(28px, 5vw, 48px)}
+    .home{padding: clamp(28px, 5vw, 48px)}
+    .home-inner{display:grid; gap:clamp(24px, 4vw, 48px); justify-items:center; text-align:center}
+    .home-copy{max-width:520px}
     .hero{font-size: clamp(28px, 4.4vw, 42px); line-height:1.08; margin:0}
-    .tag{margin:.4rem 0 1.2rem; color:var(--muted)}
+    .tag{margin:.6rem 0 1.6rem; color:var(--muted)}
+    .portrait{margin:0; position:relative; width:min(280px, 62vw); border-radius:26px; overflow:hidden;
+              box-shadow:0 32px 70px rgba(8,23,56,.45); border:1px solid rgba(255,255,255,.08);
+              background:var(--portrait-bg, radial-gradient(120% 120% at 20% 15%, rgba(59,130,246,.45), rgba(12,20,38,.85)))}
+    .portrait::before{content:""; position:absolute; inset:0; background:linear-gradient(160deg, rgba(59,130,246,.25), rgba(236,72,153,.2)); mix-blend-mode:soft-light; pointer-events:none}
+    .portrait img{display:block; width:100%; height:auto}
+    .portrait.is-placeholder{display:grid; place-items:center; border:1px dashed rgba(255,255,255,.25);
+                             background:linear-gradient(140deg, rgba(59,130,246,.35), rgba(236,72,153,.32)); color:var(--ink)}
+    .portrait.is-placeholder::before{display:none}
+    .portrait .portrait-fallback{font-size:clamp(42px, 8vw, 64px); font-weight:900; letter-spacing:.12em;
+                                 text-transform:uppercase; color:inherit; text-shadow:0 12px 32px rgba(2,6,23,.35)}
+    @media (prefers-color-scheme: light){
+      .portrait.is-placeholder{border-color:rgba(15,23,42,.12); background:linear-gradient(140deg, rgba(59,130,246,.18), rgba(236,72,153,.18)); color:var(--ink)}
+      .portrait .portrait-fallback{text-shadow:none}
+    }
+    @media(min-width: 720px){
+      .home-inner{grid-template-columns:minmax(0,1fr) minmax(0,320px); align-items:center; justify-items:start; text-align:left}
+      .ctas{justify-content:flex-start}
+    }
 
     .ctas{display:flex; flex-wrap:wrap; justify-content:center; gap:.75rem}
     .btn{--g:linear-gradient(135deg, var(--blue) 0%, var(--pink) 100%);
-         appearance:none; border:0; cursor:pointer; font-weight:800;
-         padding:.85rem 1.1rem; border-radius:14px; color:#fff; background:var(--g);
-         box-shadow:0 14px 30px rgba(59,130,246,.25), 0 6px 18px rgba(236,72,153,.18);
-         text-decoration:none; display:inline-block}
-    .btn.secondary{background:transparent; color:var(--ink); border:1px solid var(--rule); box-shadow:none}
-    .btn:hover{filter:brightness(1.05)}
+         appearance:none; border:1px solid var(--rule); cursor:pointer; font-weight:800;
+         padding:.85rem 1.1rem; border-radius:14px; color:var(--ink); background:var(--card);
+         text-decoration:none; display:inline-flex; align-items:center; gap:.4rem;
+         transition: filter .16s ease, transform .16s ease, box-shadow .16s ease, background .16s ease, color .16s ease}
+    .btn:hover{filter:brightness(1.04); transform:translateY(-1px)}
+    .btn.is-active{color:#fff; border-color:transparent; background:var(--g);
+                   box-shadow:0 14px 30px rgba(59,130,246,.25), 0 6px 18px rgba(236,72,153,.18)}
 
     /* CV view */
     .cv h2{margin:0 0 .6rem}
@@ -207,13 +228,22 @@
     <!-- Views container -->
     <main class="card">
       <!-- HOME -->
+
       <section id="home" class="view home active" aria-labelledby="h-home">
-        <h1 id="h-home" class="hero">Hi, I’m Hilda: I secure clouds and simplify risk.</h1>
-        <p class="tag">Explore my CV and projects below.</p>
-        <div class="ctas">
-          <a class="btn" href="#/cv" data-link>📄 View CV</a>
-          <a class="btn secondary" href="#/projects" data-link>🧩 View Projects</a>
-          <a class="btn secondary" href="#/blog" data-link>✍️ View Blog</a>
+        <div class="home-inner">
+          <div class="home-copy">
+            <h1 id="h-home" class="hero">Hi, I’m Hilda: I secure clouds and simplify risk.</h1>
+            <p class="tag">Explore my CV, recent projects, and blog insights below.</p>
+            <div class="ctas">
+              <a class="btn" href="#/cv" data-link data-view="cv">📄 <span>View CV</span></a>
+              <a class="btn" href="#/projects" data-link data-view="projects">🧩 <span>View Projects</span></a>
+              <a class="btn" href="#/blog" data-link data-view="blog">✍️ <span>View Blog</span></a>
+            </div>
+          </div>
+          <figure class="portrait" data-fallback-initials="HFM" data-fallback-label="Portrait of Hilda Machando">
+            <img src="assets/hilda-portrait.png" alt="Portrait of Hilda Machando" loading="lazy" decoding="async" />
+          </figure>
+
         </div>
       </section>
 
@@ -279,7 +309,39 @@
   </div>
 
  <script>
+
+    // Portrait fallback — show initials if the image is not bundled yet
+    (function(){
+      const portrait = document.querySelector('.portrait');
+      if (!portrait) return;
+      const img = portrait.querySelector('img');
+      if (!img) return;
+
+      const initials = portrait.dataset.fallbackInitials || 'HM';
+      const label = portrait.dataset.fallbackLabel || img.getAttribute('alt') || 'Portrait';
+
+      function activatePlaceholder(){
+        if (portrait.classList.contains('is-placeholder')) return;
+        portrait.classList.add('is-placeholder');
+        portrait.setAttribute('role', 'img');
+        portrait.setAttribute('aria-label', label);
+        const fallback = document.createElement('span');
+        fallback.className = 'portrait-fallback';
+        fallback.textContent = initials;
+        fallback.setAttribute('aria-hidden', 'true');
+        portrait.appendChild(fallback);
+        img.remove();
+      }
+
+      img.addEventListener('error', activatePlaceholder);
+
+      if (img.complete && (!img.naturalWidth || !img.naturalHeight)) {
+        activatePlaceholder();
+      }
+    })();
+
     // CV content loader — reuse markup from cv.html
+
     (function(){
       const target = document.getElementById('cv-embed');
       if (!target) return;
@@ -361,7 +423,13 @@
       if (!container) return;
 
       const FEED_URL = 'https://medium.com/feed/@hildamachando4';
-      const PROXY_URL = `https://api.allorigins.win/raw?url=${encodeURIComponent(FEED_URL)}`;
+
+      const SOURCES = [
+        `https://r.jina.ai/${FEED_URL}`,
+        `https://thingproxy.freeboard.io/fetch/${FEED_URL}`,
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(FEED_URL)}`
+      ];
+
 
       let loaded = false;
       let loadingPromise = null;
@@ -422,17 +490,32 @@
         });
       }
 
+
+      function fetchSequential(index = 0){
+        const url = SOURCES[index];
+        if (!url) {
+          return Promise.reject(new Error('All feed sources failed.'));
+        }
+        return fetch(url)
+          .then(res => {
+            if (!res.ok) throw new Error(`Failed to fetch feed (${res.status})`);
+            return res.text();
+          })
+          .catch(err => {
+            console.warn(`Medium feed request failed for ${url}`, err);
+            return fetchSequential(index + 1);
+          });
+      }
+
+
       function load(){
         if (loaded) return Promise.resolve();
         if (loadingPromise) return loadingPromise;
 
         setStatus('Loading latest posts…', false);
 
-        loadingPromise = fetch(PROXY_URL)
-          .then(res => {
-            if (!res.ok) throw new Error(`Failed to fetch feed: ${res.status}`);
-            return res.text();
-          })
+
+        loadingPromise = fetchSequential()
           .then(text => {
             const items = parseFeed(text);
             render(items);
@@ -440,7 +523,9 @@
           })
           .catch(err => {
             console.error(err);
-            setStatus('Unable to load Medium posts right now. Please try again later.', true);
+
+            setStatus('Unable to load Medium posts right now. Please open Medium to view the latest articles.', true);
+
             loaded = false;
             throw err;
           })
@@ -482,7 +567,22 @@
         projects: document.getElementById('projects'),
         blog: document.getElementById('blog')
       };
+
       const all = Object.values(views);
+      const ctas = document.querySelectorAll('.ctas [data-view]');
+
+      function updateCtas(id){
+        ctas.forEach(btn => {
+          const view = btn.getAttribute('data-view');
+          const isActive = view === id;
+          btn.classList.toggle('is-active', isActive);
+          if (isActive){
+            btn.setAttribute('aria-current', 'page');
+          } else {
+            btn.removeAttribute('aria-current');
+          }
+        });
+      }
 
       function activate(id){
         all.forEach(v => v.classList.remove('active'));
@@ -491,6 +591,9 @@
           const isCurrent = a.getAttribute('href') === `#/${id}` || (id==='home' && a.getAttribute('href')==='#/home');
           a.setAttribute('aria-current', isCurrent ? 'page' : 'false');
         });
+
+        updateCtas(id);
+
         if (id === 'blog' && typeof window.__ensureBlogLoaded === 'function'){
           window.__ensureBlogLoaded();
         }
@@ -503,7 +606,19 @@
       }
 
       window.addEventListener('hashchange', parse);
-      document.addEventListener('DOMContentLoaded', parse);
+      document.addEventListener('DOMContentLoaded', () => {
+        parse();
+        const cvCta = document.querySelector('.ctas [data-view="cv"]');
+        if (cvCta){
+          cvCta.addEventListener('click', evt => {
+            const current = location.hash.replace(/^#\/?/, '') || 'home';
+            if (current === 'cv'){
+              evt.preventDefault();
+              location.hash = '#/home';
+            }
+          });
+        }
+      });
     })();
 
     // Print / Download PDF (prints only the CV view)
