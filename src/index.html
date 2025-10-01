@@ -84,6 +84,8 @@
     .cv-actions{display:flex; flex-wrap:wrap; gap:.5rem; margin:.5rem 0 1rem}
     .btn-lite{appearance:none; border:1px solid var(--rule); background:linear-gradient(135deg, rgba(59,130,246,.12), rgba(236,72,153,.10)); color:inherit; padding:.55rem .9rem; border-radius:12px; cursor:pointer; font-weight:800}
     .btn-lite:hover{filter:brightness(1.05)}
+    .cv-status{margin:1.2rem 0; text-align:center; color:var(--muted);}
+    .cv-status.error{color:#f87171;}
 
     /* Timeline styling */
     .timeline{position:relative; margin-top:.4rem; padding-left:24px}
@@ -204,176 +206,8 @@
           <button class="btn-lite" id="printBtn">🖨️ Print</button>
           <button class="btn-lite" id="pdfBtn">⬇️ Download PDF</button>
         </div>
-        <div class="resume">
-          <div class="container">
-            <!--========== MASTHEAD ==========-->
-            <header class="masthead">
-              <h1 class="name">Hilda Machando</h1>
-              <p class="titles">Cloud Security • Governance, Risk and Compliance • Operational Risk</p>
-              <div class="contact">
-                <a href="mailto:hildamachando4@gmail.com">Email: hildamachando4@gmail.com</a>
-                <a href="https://www.linkedin.com/in/hilda-machando-43277b179" target="_blank" rel="noopener">LinkedIn: Hilda Machando</a>
-                <a href="https://medium.com/@hildamachando4" target="_blank" rel="noopener">Medium: hildamachando4</a>
-              </div>
-            </header>
-
-             
-            <!--========== CERTIFICATIONS ==========-->
-            <section id="certs">
-              <h2 class="section-title">Certifications</h2>
-              <div class="grid-2">
-                <div>
-                  <div class="badge">CISA</div>
-                  <div class="badge">AWS Security Specialty</div>
-                  <div class="badge">AWS Solutions Architect – Associate</div>
-                  <div class="badge">AWS Cloud Practitioner</div>
-                </div>
-              </div>
-            </section>
-
-            <!--========== PROFESSIONAL EXPERIENCE ==========-->
-            <section id="experience">
-              <h2 class="section-title">Professional Experience</h2>
-
-              <article class="item">
-                <div>
-                  <p class="role">ICT Operational Risk & Compliance Specialist</p>
-                  <p class="company">CABS – Central Africa Building Society</p>
-                  <ul class="bullets">
-                    <li>Led risk reviews across information security, technology operations, and emerging tech, aligning controls to NIST and ISO&nbsp;27001.</li>
-                    <li>Drove improvements in change management and vendor governance; reduced audit findings through targeted remediation.</li>
-                    <li>Partnered with engineering to strengthen cloud security posture and reduce non‑production AWS costs.</li>
-                  </ul>
-                </div>
-                <div>
-                  <div class="date">Jan 2024 – Present</div>
-                  <div class="location">Harare</div>
-                </div>
-              </article>
-
-              <article class="item">
-                <div>
-                  <p class="role">Cloud Security Engineer</p>
-                  <p class="company">Old Mutual · Remote</p>
-                  <ul class="bullets">
-                    <li>Led AWS security governance initiatives, improving the AWS Security Hub security score by 30% in six months.</li>
-                    <li>Managed security policy development and compliance reviews, ensuring adherence to ISO 27001, PCI-DSS, and NIST security frameworks.</li>
-                    <li>Conducted security risk assessments and developed a dynamic risk register, improving threat mitigation efficiency.</li>
-                    <li>Developed and automated threat intelligence scripts to detect malicious open-directory domains in newly registered domains.</li>
-                    <li>Collaborated with security auditors and compliance teams to remediate security gaps and strengthen cloud security controls.</li>
-                    <li>Designed and maintained security dashboards using Power BI, providing executive teams with real-time insights into security operations.</li>
-                  </ul>
-                </div>
-                <div>
-                  <div class="date">February 2022 – December 2023</div>
-                  <div class="location">Harare</div>
-                </div>
-              </article>
-
-              <article class="item">
-                <div>
-                  <p class="role">Cyber Security Engineer</p>
-                  <p class="company">CABS – Central Africa Building Society</p>
-                  <ul class="bullets">
-                    <li>Implemented security awareness training programs, reducing risk-prone behaviour among employees by 20%.</li>
-                    <li>Led the deployment of advanced threat protection solutions, increasing threat detection capabilities by 40%.</li>
-                    <li>Conducted penetration testing and vulnerability management, ensuring compliance with RBZ security standards and industry frameworks.</li>
-                    <li>Developed incident response plans and forensic analysis workflows, reducing incident response times by 80%.</li>
-                    <li>Optimized security operations through cost optimization strategies using Terraform, reducing daily operational costs by 3.5%.</li>
-                  </ul>
-                </div>
-                <div>
-                  <div class="date">February 2020 – January 2022</div>
-                  <div class="location">Remote</div>
-                </div>
-              </article>
-
-              <article class="item">
-                <div>
-                  <p class="role">IT Support</p>
-                  <p class="company">Proplastics</p>
-                  <ul class="bullets">
-                    <li>Provided technical support for IT systems and network security, ensuring minimal disruptions to business operations.</li>
-                    <li>Drove improvements in change management and vendor governance; reduced audit findings through targeted remediation.</li>
-                    <li>Developed clear documentation for IT governance and compliance, enhancing policy implementation across teams.</li>
-                  </ul>
-                </div>
-                <div>
-                  <div class="date">July 2019 – January 2020</div>
-                  <div class="location">Harare</div>
-                </div>
-              </article>
-            </section>
-
-            <!--========== EDUCATION ==========-->
-            <section id="education">
-              <h2 class="section-title">Education</h2>
-              <div class="grid-2">
-                <article class="item" style="border-top:0">
-                  <div>
-                    <p class="role">MSc, Big Data Analytics</p>
-                    <p class="company">Chinhoyi University of Technology</p>
-                  </div>
-                  <div>
-                    <div class="date">2021 – 2023</div>
-                  </div>
-                </article>
-                <article class="item" style="border-top:0">
-                  <div>
-                    <p class="role">Honors in Computer Science</p>
-                    <p class="company">University of Zimbabwe</p>
-                  </div>
-                  <div>
-                    <div class="date">2015 – 2019</div>
-                  </div>
-                </article>
-              </div>
-            </section>
-
-            <!--========== SKILLS ==========-->
-            <section id="certs">
-              <h2 class="section-title">SKILLS</h2>
-              <div class="grid-2">
-                <div>
-                  <p class="role">AWS Security</p>
-                  <div class="badge">IAM</div>
-                  <div class="badge">GuardDuty</div>
-                  <div class="badge">Security Hub</div>
-                  <div class="badge">CloudTrailConfig</div>
-                  <div class="badge">VPC security</div>
-                  <div class="badge">KMS encryption</div>
-                  <div class="badge">Automated compliance</div>
-                </div>
-                <div>
-                  <p class="role">Compliance</p>
-                  <div class="badge">PCI DSS</div>
-                  <div class="badge">GDPR</div>
-                  <div class="badge">ISO 27001</div>
-                  <div class="badge">SOC 2</div>
-                </div>
-                <div>
-                  <p class="role">Programming</p>
-                  <div class="badge">Python</div>
-                  <div class="badge">PowerShell</div>
-                  <div class="badge">JSON/YAML</div>
-                  <div class="badge">Javascript</div>
-                  <div class="badge">HTML/CSS</div>
-                </div>
-                <div>
-                  <p class="role">Security Tools</p>
-                  <div class="badge">Splunk</div>
-                  <div class="badge">Qualys</div>
-                  <div class="badge">Prisma Cloud</div>
-                  <div class="badge">MDE</div>
-                  <div class="badge">Sentinel</div>
-                </div>
-              </div>
-            </section>
-
-            <footer>
-              <span>References available upon request</span>
-            </footer>
-          </div>
+        <div class="resume" id="cv-embed">
+          <p class="cv-status cv-loading">Loading CV…</p>
         </div>
         <nav>
           <a href="#/projects" data-link>Projects</a>
@@ -410,6 +244,82 @@
   </div>
 
   <script>
+    // CV content loader — reuse markup from cv.html
+    (function(){
+      const target = document.getElementById('cv-embed');
+      if (!target) return;
+
+      let loaded = false;
+      let loadingPromise = null;
+
+      function setStatus(message, isError){
+        target.innerHTML = `<p class="cv-status${isError ? ' error' : ''}">${message}</p>`;
+      }
+
+      function hashIsCv(){
+        const hash = location.hash.replace(/^#\/?/, '');
+        return (hash || 'home') === 'cv';
+      }
+
+      async function load(){
+        if (loaded) return;
+        if (loadingPromise) return loadingPromise;
+
+        setStatus('Loading CV…', false);
+
+        loadingPromise = fetch('cv.html')
+          .then(res => {
+            if (!res.ok) throw new Error(`Failed to fetch CV: ${res.status}`);
+            return res.text();
+          })
+          .then(text => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(text, 'text/html');
+            let markup = '';
+            const resume = doc.querySelector('.container');
+            if (resume) {
+              markup = resume.outerHTML;
+            } else if (doc.body) {
+              markup = doc.body.innerHTML;
+            } else {
+              markup = text;
+            }
+            target.innerHTML = markup;
+            loaded = true;
+          })
+          .catch(err => {
+            console.error(err);
+            setStatus('Unable to load CV right now. Please try again later.', true);
+            loaded = false;
+            throw err;
+          })
+          .finally(() => {
+            loadingPromise = null;
+          });
+
+        return loadingPromise;
+      }
+
+      function ensureLoaded(){
+        load().catch(() => {});
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        if (hashIsCv()) ensureLoaded();
+        document.querySelectorAll('[data-link][href="#/cv"]').forEach(link => {
+          link.addEventListener('click', ensureLoaded);
+        });
+      });
+
+      window.addEventListener('hashchange', () => {
+        if (hashIsCv()) ensureLoaded();
+      });
+
+      window.__ensureCvLoaded = function(){
+        return load().catch(() => {});
+      };
+    })();
+
     // Tiny hash router — no dependencies
     (function(){
       const views = {
@@ -443,8 +353,11 @@
       function ensureCV(){ if(location.hash !== '#/cv'){ location.hash = '#/cv'; } }
       function doPrint(){
         ensureCV();
-        document.body.classList.add('print-cv');
-        setTimeout(()=> window.print(), 50);
+        const ready = (typeof window.__ensureCvLoaded === 'function') ? window.__ensureCvLoaded() : Promise.resolve();
+        Promise.resolve(ready).finally(() => {
+          document.body.classList.add('print-cv');
+          setTimeout(()=> window.print(), 50);
+        });
       }
       window.addEventListener('afterprint', ()=> document.body.classList.remove('print-cv'));
       document.addEventListener('DOMContentLoaded', ()=>{
@@ -459,6 +372,7 @@
     (function(){
       const el = document.getElementById('visitor-count');
       if(!el) return;
+
       const COUNTER_API = 'https://bvtfd619y9.execute-api.us-east-1.amazonaws.com/prod/counter';
       // A stable partition key for your site/app. Adjust as desired.
       const host = location.hostname || 'local';
@@ -499,6 +413,7 @@
           if(shouldHit) localStorage.setItem(stampKey, today);
         })
         .catch(() => { el.textContent = '—'; });
+
     })();
   </script>
 </body>
