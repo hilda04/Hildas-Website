@@ -461,7 +461,13 @@
       if(!el) return;
       const COUNTER_API = 'https://bvtfd619y9.execute-api.us-east-1.amazonaws.com/prod/counter';
       // A stable partition key for your site/app. Adjust as desired.
-      const SITE_ID = (hildaswebsite.com || 'local') + '/';
+      const host = location.hostname || 'local';
+      let path = location.pathname || '/';
+      path = path.replace(/index\.html$/i, '');
+      if (!path) path = '/';
+      if (!path.startsWith('/')) path = `/${path}`;
+      if (path.length > 1) path = path.replace(/\/+$/, '');
+      const SITE_ID = `${host}${path}`;
 
       // Throttle increments per device/day. Remove if you want to count every page load.
       const stampKey = 'vc-stamp';
@@ -488,6 +494,7 @@
   </script>
 </body>
 </html>
+
 
 
 
