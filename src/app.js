@@ -64,7 +64,7 @@ function initVisitorCounter() {
 
       const candidates = [payload];
       if (payload && typeof payload === 'object') {
-        candidates.push(payload.count, payload.value, payload.total, payload.visits, payload.Count, payload.Total);
+        candidates.push(payload.count, payload.value, payload.total, payload.visits, payload.Count, payload.Total, payload.body);
         if (payload.Item) {
           candidates.push(payload.Item.count, payload.Item.value, payload.Item.total, payload.Item.Count, payload.Item.Total);
           if (payload.Item.count && typeof payload.Item.count === 'object') {
@@ -97,14 +97,27 @@ function initVisitorCounter() {
       }
 
       let value = null;
+      const parseNumericString = (str) => {
+        if (typeof str !== 'string') return null;
+        const cleaned = str.replace(/[,\s]/g, '');
+        const direct = Number(cleaned);
+        if (Number.isFinite(direct)) return direct;
+        const match = str.match(/-?\d[\d,\.\s]*/);
+        if (match) {
+          const parsed = Number(match[0].replace(/[,\s]/g, ''));
+          return Number.isFinite(parsed) ? parsed : null;
+        }
+        return null;
+      };
+
       for (const candidate of candidates) {
         if (typeof candidate === 'number' && Number.isFinite(candidate)) {
           value = candidate;
           break;
         }
         if (typeof candidate === 'string') {
-          const numeric = Number(candidate.replace(/[,\s]/g, ''));
-          if (Number.isFinite(numeric)) {
+          const numeric = parseNumericString(candidate);
+          if (numeric !== null) {
             value = numeric;
             break;
           }
