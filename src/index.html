@@ -439,6 +439,19 @@
             }
           }
 
+          const parseNumericString = (str) => {
+            if (typeof str !== 'string') return null;
+            const cleaned = str.replace(/[,\s]/g, '');
+            const direct = Number(cleaned);
+            if (Number.isFinite(direct)) return direct;
+            const match = str.match(/-?\d[\d,\.\s]*/);
+            if (match) {
+              const parsed = Number(match[0].replace(/[,\s]/g, ''));
+              return Number.isFinite(parsed) ? parsed : null;
+            }
+            return null;
+          };
+
           let value = null;
           for (const candidate of candidates) {
             if (typeof candidate === 'number' && Number.isFinite(candidate)) {
@@ -446,8 +459,8 @@
               break;
             }
             if (typeof candidate === 'string') {
-              const numeric = Number(candidate.replace(/[,\s]/g, ''));
-              if (Number.isFinite(numeric)) {
+              const numeric = parseNumericString(candidate);
+              if (numeric !== null) {
                 value = numeric;
                 break;
               }
@@ -462,6 +475,7 @@
   </script>
 </body>
 </html>
+
 
 
 
