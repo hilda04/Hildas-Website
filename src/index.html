@@ -114,6 +114,23 @@
     .proj p{margin:.2rem 0 .5rem; color:var(--muted)}
     .proj a{color:inherit}
 
+    /* Blog */
+    .blog{padding: clamp(20px, 4vw, 32px)}
+    .blog-intro{color:var(--muted); margin-top:-.3rem; margin-bottom:1.4rem}
+    .blog-list{display:grid; gap:14px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));}
+    .blog-card{padding:16px; border:1px solid var(--rule); border-radius:14px; background:linear-gradient(180deg, rgba(59,130,246,.06), rgba(236,72,153,.04)); box-shadow:0 10px 24px rgba(2,6,23,.15)}
+    .blog-card h3{margin:.1rem 0 .4rem; font-size:1.05rem}
+    .blog-card p{margin:.3rem 0 .6rem; color:var(--muted); font-size:.95rem}
+    .blog-card time{display:block; font-size:.85rem; color:var(--muted); margin-bottom:.35rem; font-weight:600}
+    .blog-card a{color:inherit; text-decoration:none}
+    .blog-card a:hover{text-decoration:underline}
+    .blog-card .blog-link{display:inline-flex; align-items:center; gap:.35rem; font-weight:700; color:var(--blue-700); text-decoration:none}
+    .blog-card .blog-link:hover{text-decoration:underline}
+    .blog-status{margin:0; color:var(--muted)}
+    .blog-status.error{color:#f87171}
+    .blog-note{margin:1.5rem 0 0; text-align:center; color:var(--muted)}
+    .blog-note a{color:var(--blue-700); font-weight:700}
+
     /* Nav footer */
     nav{display:flex; justify-content:center; gap:.6rem; margin-top:14px}
     nav a{padding:.45rem .8rem; border-radius:12px; border:1px solid var(--rule); background:var(--card); text-decoration:none; color:inherit}
@@ -196,6 +213,7 @@
         <div class="ctas">
           <a class="btn" href="#/cv" data-link>📄 View CV</a>
           <a class="btn secondary" href="#/projects" data-link>🧩 View Projects</a>
+          <a class="btn secondary" href="#/blog" data-link>✍️ View Blog</a>
         </div>
       </section>
 
@@ -211,6 +229,7 @@
         </div>
         <nav>
           <a href="#/projects" data-link>Projects</a>
+          <a href="#/blog" data-link>Blog</a>
           <a href="#/home" data-link aria-current="page">Home</a>
         </nav>
       </section>
@@ -237,6 +256,22 @@
         </div>
         <nav>
           <a href="#/cv" data-link>CV</a>
+          <a href="#/blog" data-link>Blog</a>
+          <a href="#/home" data-link aria-current="page">Home</a>
+        </nav>
+      </section>
+
+      <!-- BLOG PAGE -->
+      <section id="blog" class="view blog" aria-labelledby="h-blog">
+        <h2 id="h-blog">Latest from the Blog</h2>
+        <p class="blog-intro">Here are my newest Medium articles on cloud security, GRC and risk leadership.</p>
+        <div class="blog-list" id="blog-posts" aria-live="polite">
+          <p class="blog-status">Loading latest posts…</p>
+        </div>
+        <p class="blog-note">Open Medium to view more → <a href="https://medium.com/@hildamachando4" target="_blank" rel="noopener">medium.com/@hildamachando4</a></p>
+        <nav>
+          <a href="#/cv" data-link>CV</a>
+          <a href="#/projects" data-link>Projects</a>
           <a href="#/home" data-link aria-current="page">Home</a>
         </nav>
       </section>
@@ -320,12 +355,132 @@
       };
     })();
 
+    // Blog posts loader — fetch latest Medium entries
+    (function(){
+      const container = document.getElementById('blog-posts');
+      if (!container) return;
+
+      const FEED_URL = 'https://medium.com/feed/@hildamachando4';
+      const PROXY_URL = `https://api.allorigins.win/raw?url=${encodeURIComponent(FEED_URL)}`;
+
+      let loaded = false;
+      let loadingPromise = null;
+
+      function setStatus(message, isError){
+        container.innerHTML = `<p class="blog-status${isError ? ' error' : ''}">${message}</p>`;
+      }
+
+      function clean(html){
+        if (!html) return '';
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const text = doc.body ? doc.body.textContent || '' : html;
+        return text.replace(/\s+/g, ' ').trim();
+      }
+
+      function truncate(text){
+        const max = 180;
+        if (text.length <= max) return text;
+        return `${text.slice(0, max - 1).trim()}…`;
+      }
+
+      function render(items){
+        if (!items.length){
+          setStatus('No posts found yet. Please check back soon.', false);
+          return;
+        }
+        const markup = items.map(item => {
+          const time = item.dateLabel ? `<time datetime="${item.dateISO}">${item.dateLabel}</time>` : '';
+          const snippet = item.snippet ? `<p>${item.snippet}</p>` : '';
+          return `<article class="blog-card">
+            ${time}
+            <h3><a href="${item.link}" target="_blank" rel="noopener">${item.title}</a></h3>
+            ${snippet}
+            <a class="blog-link" href="${item.link}" target="_blank" rel="noopener">Read on Medium →</a>
+          </article>`;
+        }).join('');
+        container.innerHTML = markup;
+      }
+
+      function parseFeed(text){
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(text, 'application/xml');
+        const parseError = xml.querySelector('parsererror');
+        if (parseError) throw new Error('Failed to parse feed.');
+
+        return Array.from(xml.querySelectorAll('item')).slice(0, 6).map(item => {
+          const title = (item.querySelector('title')?.textContent || 'Untitled').trim();
+          const link = (item.querySelector('link')?.textContent || 'https://medium.com/@hildamachando4').trim();
+          const pubDate = item.querySelector('pubDate')?.textContent || '';
+          const date = pubDate ? new Date(pubDate) : null;
+          const description = item.querySelector('description')?.textContent || item.querySelector('content\\:encoded')?.textContent || '';
+          const snippet = truncate(clean(description));
+          const isDateValid = date instanceof Date && !Number.isNaN(date.valueOf());
+          const dateLabel = isDateValid ? date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : '';
+          const dateISO = isDateValid ? date.toISOString() : '';
+          return { title, link, dateLabel, dateISO, snippet };
+        });
+      }
+
+      function load(){
+        if (loaded) return Promise.resolve();
+        if (loadingPromise) return loadingPromise;
+
+        setStatus('Loading latest posts…', false);
+
+        loadingPromise = fetch(PROXY_URL)
+          .then(res => {
+            if (!res.ok) throw new Error(`Failed to fetch feed: ${res.status}`);
+            return res.text();
+          })
+          .then(text => {
+            const items = parseFeed(text);
+            render(items);
+            loaded = true;
+          })
+          .catch(err => {
+            console.error(err);
+            setStatus('Unable to load Medium posts right now. Please try again later.', true);
+            loaded = false;
+            throw err;
+          })
+          .finally(() => {
+            loadingPromise = null;
+          });
+
+        return loadingPromise;
+      }
+
+      function ensureLoaded(){
+        load().catch(() => {});
+      }
+
+      function hashIsBlog(){
+        const hash = location.hash.replace(/^#\/?/, '');
+        return (hash || 'home') === 'blog';
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        if (hashIsBlog()) ensureLoaded();
+        document.querySelectorAll('[data-link][href="#/blog"]').forEach(link => {
+          link.addEventListener('click', ensureLoaded);
+        });
+      });
+
+      window.addEventListener('hashchange', () => {
+        if (hashIsBlog()) ensureLoaded();
+      });
+
+      window.__ensureBlogLoaded = ensureLoaded;
+    })();
+
     // Tiny hash router — no dependencies
     (function(){
       const views = {
         home: document.getElementById('home'),
         cv: document.getElementById('cv'),
-        projects: document.getElementById('projects')
+        projects: document.getElementById('projects'),
+        blog: document.getElementById('blog')
       };
       const all = Object.values(views);
 
@@ -336,6 +491,9 @@
           const isCurrent = a.getAttribute('href') === `#/${id}` || (id==='home' && a.getAttribute('href')==='#/home');
           a.setAttribute('aria-current', isCurrent ? 'page' : 'false');
         });
+        if (id === 'blog' && typeof window.__ensureBlogLoaded === 'function'){
+          window.__ensureBlogLoaded();
+        }
       }
 
       function parse(){
