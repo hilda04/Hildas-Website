@@ -228,6 +228,7 @@
     <!-- Views container -->
     <main class="card">
       <!-- HOME -->
+
       <section id="home" class="view home active" aria-labelledby="h-home">
         <div class="home-inner">
           <div class="home-copy">
@@ -239,9 +240,10 @@
               <a class="btn" href="#/blog" data-link data-view="blog">✍️ <span>View Blog</span></a>
             </div>
           </div>
-          <figure class="portrait" data-fallback-initials="HM" data-fallback-label="Portrait of Hilda Machando">
+          <figure class="portrait" data-fallback-initials="HFM" data-fallback-label="Portrait of Hilda Machando">
             <img src="assets/hilda-portrait.png" alt="Portrait of Hilda Machando" loading="lazy" decoding="async" />
           </figure>
+
         </div>
       </section>
 
@@ -307,6 +309,7 @@
   </div>
 
  <script>
+
     // Portrait fallback — show initials if the image is not bundled yet
     (function(){
       const portrait = document.querySelector('.portrait');
@@ -338,6 +341,7 @@
     })();
 
     // CV content loader — reuse markup from cv.html
+
     (function(){
       const target = document.getElementById('cv-embed');
       if (!target) return;
@@ -419,11 +423,13 @@
       if (!container) return;
 
       const FEED_URL = 'https://medium.com/feed/@hildamachando4';
+
       const SOURCES = [
         `https://r.jina.ai/${FEED_URL}`,
         `https://thingproxy.freeboard.io/fetch/${FEED_URL}`,
         `https://api.allorigins.win/raw?url=${encodeURIComponent(FEED_URL)}`
       ];
+
 
       let loaded = false;
       let loadingPromise = null;
@@ -484,6 +490,7 @@
         });
       }
 
+
       function fetchSequential(index = 0){
         const url = SOURCES[index];
         if (!url) {
@@ -500,11 +507,13 @@
           });
       }
 
+
       function load(){
         if (loaded) return Promise.resolve();
         if (loadingPromise) return loadingPromise;
 
         setStatus('Loading latest posts…', false);
+
 
         loadingPromise = fetchSequential()
           .then(text => {
@@ -514,7 +523,9 @@
           })
           .catch(err => {
             console.error(err);
+
             setStatus('Unable to load Medium posts right now. Please open Medium to view the latest articles.', true);
+
             loaded = false;
             throw err;
           })
@@ -556,6 +567,7 @@
         projects: document.getElementById('projects'),
         blog: document.getElementById('blog')
       };
+
       const all = Object.values(views);
       const ctas = document.querySelectorAll('.ctas [data-view]');
 
@@ -579,7 +591,9 @@
           const isCurrent = a.getAttribute('href') === `#/${id}` || (id==='home' && a.getAttribute('href')==='#/home');
           a.setAttribute('aria-current', isCurrent ? 'page' : 'false');
         });
+
         updateCtas(id);
+
         if (id === 'blog' && typeof window.__ensureBlogLoaded === 'function'){
           window.__ensureBlogLoaded();
         }
