@@ -418,146 +418,152 @@
     })();
 
     // Blog posts loader — fetch latest Medium entries
-    (function(){
-      const container = document.getElementById('blog-posts');
-      if (!container) return;
+// Blog posts loader — fetch latest Medium entries
+(function(){
+  const container = document.getElementById('blog-posts');
+  if (!container) return;
 
-      const FEED_URL = 'https://medium.com/feed/@hildamachando4';
+  const FEED_URL = 'https://medium.com/feed/@hildamachando4';
+  const PROXY_URL = `https://api.allorigins.win/raw?url=${encodeURIComponent(FEED_URL)}`;
 
-      const SOURCES = [
-        `https://r.jina.ai/${FEED_URL}`,
-        `https://thingproxy.freeboard.io/fetch/${FEED_URL}`,
-        `https://api.allorigins.win/raw?url=${encodeURIComponent(FEED_URL)}`
-      ];
+  let loaded = false;
+  let loadingPromise = null;
 
+  function setStatus(message, isError){
+    container.innerHTML = `<p class="blog-status${isError ? ' error' : ''}">${message}</p>`;
+  }
 
-      let loaded = false;
-      let loadingPromise = null;
+  function clean(html){
+    if (!html) return '';
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    const text = doc.body ? doc.body.textContent || '' : html;
+    return text.replace(/\s+/g, ' ').trim();
+  }
 
-      function setStatus(message, isError){
-        container.innerHTML = `<p class="blog-status${isError ? ' error' : ''}">${message}</p>`;
-      }
+  function truncate(text){
+    const max = 180;
+    if (text.length <= max) return text;
+    return `${text.slice(0, max - 1).trim()}…`;
+  }
 
-      function clean(html){
-        if (!html) return '';
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const text = doc.body ? doc.body.textContent || '' : html;
-        return text.replace(/\s+/g, ' ').trim();
-      }
+  function render(items){
+    if (!items.length){
+      setStatus('No posts found yet. Please check back soon.', false);
+      return;
+    }
+    const markup = items.map(item => {
+      const time = item.dateLabel ? `<time datetime="${item.dateISO}">${item.dateLabel}</time>` : '';
+      const snippet = item.snippet ? `<p>${item.snippet}</p>` : '';
+      return `<article class="blog-card">
+        ${time}
+        <h3><a href="${item.link}" target="_blank" rel="noopener">${item.title}</a></h3>
+        ${snippet}
+        <a class="blog-link" href="${item.link}" target="_blank" rel="noopener">Read on Medium →</a>
+      </article>`;
+    }).join('');
+    container.innerHTML = markup;
+  }
 
-      function truncate(text){
-        const max = 180;
-        if (text.length <= max) return text;
-        return `${text.slice(0, max - 1).trim()}…`;
-      }
+  function parseFeed(text){
+    const parser = new DOMParser();
+    const xml = parser.parseFromString(text, 'application/xml');
+    const parseError = xml.querySelector('parsererror');
+    if (parseError) throw new Error('Failed to parse feed.');
 
-      function render(items){
-        if (!items.length){
-          setStatus('No posts found yet. Please check back soon.', false);
-          return;
-        }
-        const markup = items.map(item => {
-          const time = item.dateLabel ? `<time datetime="${item.dateISO}">${item.dateLabel}</time>` : '';
-          const snippet = item.snippet ? `<p>${item.snippet}</p>` : '';
-          return `<article class="blog-card">
-            ${time}
-            <h3><a href="${item.link}" target="_blank" rel="noopener">${item.title}</a></h3>
-            ${snippet}
-            <a class="blog-link" href="${item.link}" target="_blank" rel="noopener">Read on Medium →</a>
-          </article>`;
-        }).join('');
-        container.innerHTML = markup;
-      }
+    return Array.from(xml.querySelectorAll('item')).slice(0, 6).map(item => {
+      const title = (item.querySelector('title')?.textContent || 'Untitled').trim();
+      const link = (item.querySelector('link')?.textContent || 'https://medium.com/@hildamachando4').trim();
+      const pubDate = item.querySelector('pubDate')?.textContent || '';
+      const date = pubDate ? new Date(pubDate) : null;
+      const description = item.querySelector('description')?.textContent || item.querySelector('content\\:encoded')?.textContent || '';
+      const snippet = truncate(clean(description));
+      const isDateValid = date instanceof Date && !Number.isNaN(date.valueOf());
+      const dateLabel = isDateValid ? date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : '';
+      const dateISO = isDateValid ? date.toISOString() : '';
+      return { title, link, dateLabel, dateISO, snippet };
+    });
+  }
 
-      function parseFeed(text){
-        const parser = new DOMParser();
-        const xml = parser.parseFromString(text, 'application/xml');
-        const parseError = xml.querySelector('parsererror');
-        if (parseError) throw new Error('Failed to parse feed.');
+  function load(){
+    if (loaded) return Promise.resolve();
+    if (loadingPromise) return loadingPromise;
 
-        return Array.from(xml.querySelectorAll('item')).slice(0, 6).map(item => {
-          const title = (item.querySelector('title')?.textContent || 'Untitled').trim();
-          const link = (item.querySelector('link')?.textContent || 'https://medium.com/@hildamachando4').trim();
-          const pubDate = item.querySelector('pubDate')?.textContent || '';
-          const date = pubDate ? new Date(pubDate) : null;
-          const description = item.querySelector('description')?.textContent || item.querySelector('content\\:encoded')?.textContent || '';
-          const snippet = truncate(clean(description));
-          const isDateValid = date instanceof Date && !Number.isNaN(date.valueOf());
-          const dateLabel = isDateValid ? date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : '';
-          const dateISO = isDateValid ? date.toISOString() : '';
-          return { title, link, dateLabel, dateISO, snippet };
-        });
-      }
+    setStatus('Loading latest posts…', false);
 
-
-      function fetchSequential(index = 0){
-        const url = SOURCES[index];
-        if (!url) {
-          return Promise.reject(new Error('All feed sources failed.'));
-        }
-        return fetch(url)
-          .then(res => {
-            if (!res.ok) throw new Error(`Failed to fetch feed (${res.status})`);
-            return res.text();
-          })
-          .catch(err => {
-            console.warn(`Medium feed request failed for ${url}`, err);
-            return fetchSequential(index + 1);
-          });
-      }
-
-
-      function load(){
-        if (loaded) return Promise.resolve();
-        if (loadingPromise) return loadingPromise;
-
-        setStatus('Loading latest posts…', false);
-
-
-        loadingPromise = fetchSequential()
-          .then(text => {
-            const items = parseFeed(text);
-            render(items);
-            loaded = true;
-          })
-          .catch(err => {
-            console.error(err);
-
-            setStatus('Unable to load Medium posts right now. Please open Medium to view the latest articles.', true);
-
-            loaded = false;
-            throw err;
-          })
-          .finally(() => {
-            loadingPromise = null;
-          });
-
-        return loadingPromise;
-      }
-
-      function ensureLoaded(){
-        load().catch(() => {});
-      }
-
-      function hashIsBlog(){
-        const hash = location.hash.replace(/^#\/?/, '');
-        return (hash || 'home') === 'blog';
-      }
-
-      document.addEventListener('DOMContentLoaded', () => {
-        if (hashIsBlog()) ensureLoaded();
-        document.querySelectorAll('[data-link][href="#/blog"]').forEach(link => {
-          link.addEventListener('click', ensureLoaded);
-        });
+    loadingPromise = fetch(PROXY_URL)
+      .then(res => {
+        if (!res.ok) throw new Error(`Failed to fetch feed: ${res.status}`);
+        return res.text();
+      })
+      .then(text => {
+        const items = parseFeed(text);
+        render(items);
+        loaded = true;
+      })
+      .catch(err => {
+        console.error(err);
+        setStatus('Unable to load Medium posts right now. Please open Medium to view latest articles.', true);
+        loaded = false;
+        throw err;
+      })
+      .finally(() => {
+        loadingPromise = null;
       });
 
-      window.addEventListener('hashchange', () => {
-        if (hashIsBlog()) ensureLoaded();
-      });
+    return loadingPromise;
+  }
 
-      window.__ensureBlogLoaded = ensureLoaded;
-    })();
+  function ensureLoaded(){
+    load().catch(() => {});
+  }
+
+  function hashIsBlog(){
+    const hash = location.hash.replace(/^#\/?/, '');
+    return (hash || 'home') === 'blog';
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    if (hashIsBlog()) ensureLoaded();
+    document.querySelectorAll('[data-link][href="#/blog"]').forEach(link => {
+      link.addEventListener('click', ensureLoaded);
+    });
+  });
+
+  window.addEventListener('hashchange', () => {
+    if (hashIsBlog()) ensureLoaded();
+  });
+
+  window.__ensureBlogLoaded = ensureLoaded;
+})();
+
+// Tiny hash router — no dependencies
+(function(){
+  const views = {
+    home: document.getElementById('home'),
+    cv: document.getElementById('cv'),
+    projects: document.getElementById('projects'),
+    blog: document.getElementById('blog')
+  };
+  const all = Object.values(views);
+
+  function activate(id){
+    all.forEach(v => v.classList.remove('active'));
+    (views[id] || views.home).classList.add('active');
+    document.querySelectorAll('nav a').forEach(a=>{
+      const isCurrent = a.getAttribute('href') === `#/${id}` || (id==='home' && a.getAttribute('href')==='#/home');
+      a.setAttribute('aria-current', isCurrent ? 'page' : 'false');
+    });
+    if (id === 'blog' && typeof window.__ensureBlogLoaded === 'function'){
+      window.__ensureBlogLoaded();
+    }
+  }
+
+  function parse(){
+    const hash = location.hash.replace('#','');
+    const id = (hash.startsWith('/')) ? hash.slice(1) : hash;
+    activate(id || 'home');
+  }
 
     // Tiny hash router — no dependencies
     (function(){
@@ -748,6 +754,7 @@
   </script>
 </body>
 </html>
+
 
 
 
