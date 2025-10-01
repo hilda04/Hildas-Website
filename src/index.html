@@ -60,16 +60,27 @@
 
     /* Home */
     .home{display:grid; place-items:center; text-align:center; padding: clamp(28px, 5vw, 48px)}
+    .intro{display:grid; justify-items:center; gap:1.4rem}
+    .portrait{width:160px; height:160px; border-radius:50%; padding:6px; background:linear-gradient(135deg, rgba(59,130,246,.55), rgba(236,72,153,.55)); box-shadow:0 18px 36px rgba(15,24,48,.45); display:grid; place-items:center}
+    .portrait-inner{width:100%; height:100%; border-radius:50%; overflow:hidden; background:rgba(15,24,48,.45); display:grid; place-items:center; position:relative}
+    .portrait img{width:100%; height:100%; object-fit:cover; display:block}
+    .portrait span{position:absolute; inset:0; display:grid; place-items:center; font-weight:900; font-size:2.2rem; letter-spacing:.08em; color:rgba(230,237,249,.92); text-shadow:0 6px 18px rgba(11,16,32,.55); opacity:0; transition:opacity .2s ease}
+    .portrait-fallback img{display:none}
+    .portrait-fallback span{opacity:1}
     .hero{font-size: clamp(28px, 4.4vw, 42px); line-height:1.08; margin:0}
     .tag{margin:.4rem 0 1.2rem; color:var(--muted)}
 
     .ctas{display:flex; flex-wrap:wrap; justify-content:center; gap:.75rem}
     .btn{--g:linear-gradient(135deg, var(--blue) 0%, var(--pink) 100%);
-         appearance:none; border:0; cursor:pointer; font-weight:800;
-         padding:.85rem 1.1rem; border-radius:14px; color:#fff; background:var(--g);
-         box-shadow:0 14px 30px rgba(59,130,246,.25), 0 6px 18px rgba(236,72,153,.18);
-         text-decoration:none; display:inline-block}
-    .btn.secondary{background:transparent; color:var(--ink); border:1px solid var(--rule); box-shadow:none}
+         appearance:none; cursor:pointer; font-weight:800;
+         padding:.85rem 1.1rem; border-radius:14px; text-decoration:none; display:inline-block;
+         border:1px solid var(--rule); background:rgba(255,255,255,.08); color:var(--ink);
+         transition:filter .16s ease, box-shadow .16s ease, background .16s ease, color .16s ease, border-color .16s ease}
+    @media (prefers-color-scheme: light){
+      .btn{background:rgba(255,255,255,.85)}
+    }
+    .btn.is-active{color:#fff; border:0; background:var(--g);
+         box-shadow:0 14px 30px rgba(59,130,246,.25), 0 6px 18px rgba(236,72,153,.18)}
     .btn:hover{filter:brightness(1.05)}
 
     /* CV view */
@@ -208,12 +219,20 @@
     <main class="card">
       <!-- HOME -->
       <section id="home" class="view home active" aria-labelledby="h-home">
-        <h1 id="h-home" class="hero">Hi, I’m Hilda: I secure clouds and simplify risk.</h1>
-        <p class="tag">Explore my CV and projects below.</p>
+        <div class="intro">
+          <div class="portrait" data-portrait>
+            <div class="portrait-inner">
+              <img src="assets/hilda-portrait.png" alt="Portrait of Hilda Machando" loading="lazy" />
+              <span aria-hidden="true">HFM</span>
+            </div>
+          </div>
+          <h1 id="h-home" class="hero">Hi, I’m Hilda: I secure clouds and simplify risk.</h1>
+          <p class="tag">Explore my CV and projects below.</p>
+        </div>
         <div class="ctas">
           <a class="btn" href="#/cv" data-link>📄 View CV</a>
-          <a class="btn secondary" href="#/projects" data-link>🧩 View Projects</a>
-          <a class="btn secondary" href="#/blog" data-link>✍️ View Blog</a>
+          <a class="btn" href="#/projects" data-link>🧩 View Projects</a>
+          <a class="btn" href="#/blog" data-link>✍️ View Blog</a>
         </div>
       </section>
 
@@ -279,6 +298,36 @@
   </div>
 
  <script>
+    // Portrait fallback handling
+    (function(){
+      document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('[data-portrait] img').forEach(img => {
+          const frame = img.closest('[data-portrait]');
+          if (!frame) return;
+
+          const showFallback = () => frame.classList.add('portrait-fallback');
+          const clearFallback = () => frame.classList.remove('portrait-fallback');
+
+          img.addEventListener('error', showFallback);
+          img.addEventListener('load', () => {
+            if (img.naturalWidth === 0) {
+              showFallback();
+            } else {
+              clearFallback();
+            }
+          });
+
+          if (img.complete) {
+            if (img.naturalWidth === 0) {
+              showFallback();
+            } else {
+              clearFallback();
+            }
+          }
+        });
+      });
+    })();
+
     // CV content loader — reuse markup from cv.html
     (function(){
       const target = document.getElementById('cv-embed');
@@ -483,6 +532,20 @@
         blog: document.getElementById('blog')
       };
       const all = Object.values(views);
+      const ctas = Array.from(document.querySelectorAll('.ctas [data-link]'));
+
+      function updateCtas(id){
+        if (!ctas.length) return;
+        ctas.forEach(link => {
+          const target = link.getAttribute('href') || '';
+          const targetId = target.replace(/^#\/?/, '') || 'home';
+          if (targetId === id) {
+            link.classList.add('is-active');
+          } else {
+            link.classList.remove('is-active');
+          }
+        });
+      }
 
       function activate(id){
         all.forEach(v => v.classList.remove('active'));
@@ -491,6 +554,7 @@
           const isCurrent = a.getAttribute('href') === `#/${id}` || (id==='home' && a.getAttribute('href')==='#/home');
           a.setAttribute('aria-current', isCurrent ? 'page' : 'false');
         });
+        updateCtas(id);
         if (id === 'blog' && typeof window.__ensureBlogLoaded === 'function'){
           window.__ensureBlogLoaded();
         }
@@ -504,6 +568,19 @@
 
       window.addEventListener('hashchange', parse);
       document.addEventListener('DOMContentLoaded', parse);
+
+      ctas.forEach(link => {
+        const target = link.getAttribute('href');
+        if (target === '#/cv') {
+          link.addEventListener('click', (event) => {
+            const current = location.hash.replace(/^#\/?/, '') || 'home';
+            if (current === 'cv') {
+              event.preventDefault();
+              location.hash = '#/home';
+            }
+          });
+        }
+      });
     })();
 
     // Print / Download PDF (prints only the CV view)
