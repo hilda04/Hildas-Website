@@ -1,0 +1,165 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Serverless portfolio backend for Hilda's website (projects CRUD + media uploads).
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: hilda-portfolio
+    Description: Prefix used for named resources such as the API.
+  AdminApiKey:
+    Type: String
+    NoEcho: true
+    Default: ''
+    Description: Shared secret required for admin mutations. Leave blank to disable (not recommended).
+  AllowedOrigins:
+    Type: String
+    Default: http://localhost:5173,https://localhost:5173
+    Description: Comma-separated list of allowed origins for CORS (API & S3 uploads). Use * for all origins.
+
+Globals:
+  Function:
+    Runtime: nodejs18.x
+    MemorySize: 256
+    Timeout: 30
+    Architectures:
+      - arm64
+    Environment:
+      Variables:
+        TABLE_NAME: !Ref PortfolioTable
+        BUCKET_NAME: !Ref MediaBucket
+        MEDIA_PREFIX: projects
+        MEDIA_BASE_URL: !Sub https://${MediaBucket}.s3.${AWS::Region}.amazonaws.com
+        ADMIN_API_KEY: !Ref AdminApiKey
+        ALLOWED_ORIGIN: !Ref AllowedOrigins
+
+Resources:
+  PortfolioApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub ${ProjectName}-api
+      StageName: prod
+      Cors:
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Admin-Key'"
+        AllowOrigins: !Sub "'${AllowedOrigins}'"
+      MethodSettings:
+        - LoggingLevel: INFO
+          MetricsEnabled: true
+          ResourcePath: '/*'
+          HttpMethod: '*'
+
+  PortfolioFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${ProjectName}-handler
+      Description: CRUD + signed upload URLs for portfolio items.
+      CodeUri: functions/portfolio/
+      Handler: handler.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PortfolioTable
+        - S3CrudPolicy:
+            BucketName: !Ref MediaBucket
+      Events:
+        ListItems:
+          Type: Api
+          Properties:
+            RestApiId: !Ref PortfolioApi
+            Path: /items
+            Method: get
+        CreateItem:
+          Type: Api
+          Properties:
+            RestApiId: !Ref PortfolioApi
+            Path: /items
+            Method: post
+        UpdateItem:
+          Type: Api
+          Properties:
+            RestApiId: !Ref PortfolioApi
+            Path: /items/{id}
+            Method: put
+        DeleteItem:
+          Type: Api
+          Properties:
+            RestApiId: !Ref PortfolioApi
+            Path: /items/{id}
+            Method: delete
+        SignUpload:
+          Type: Api
+          Properties:
+            RestApiId: !Ref PortfolioApi
+            Path: /items/{id}/upload-url
+            Method: post
+      Tags:
+        Project: !Ref ProjectName
+
+  PortfolioTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+
+  MediaBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerPreferred
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders: ['*']
+            AllowedMethods: ['GET', 'HEAD', 'PUT']
+            AllowedOrigins: !Split [',', !Ref AllowedOrigins]
+            ExposedHeaders: ['ETag']
+            MaxAge: 3600
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+
+  MediaBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref MediaBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AllowPublicRead
+            Effect: Allow
+            Principal: '*'
+            Action: s3:GetObject
+            Resource: !Sub ${MediaBucket.Arn}/*
+
+Outputs:
+  ApiEndpoint:
+    Description: Invoke URL for the API Gateway stage.
+    Value: !Sub https://${PortfolioApi}.execute-api.${AWS::Region}.amazonaws.com/prod
+  ItemsTableName:
+    Description: DynamoDB table storing portfolio items.
+    Value: !Ref PortfolioTable
+  MediaBucketName:
+    Description: S3 bucket for project images.
+    Value: !Ref MediaBucket
+  MediaBucketUrl:
+    Description: Public base URL for uploaded images.
+    Value: !Sub https://${MediaBucket}.s3.${AWS::Region}.amazonaws.com

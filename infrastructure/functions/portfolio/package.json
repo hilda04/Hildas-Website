@@ -1,0 +1,10 @@
+{
+  "name": "portfolio-api",
+  "version": "1.0.0",
+  "description": "Serverless portfolio CRUD handler",
+  "main": "handler.js",
+  "license": "MIT",
+  "dependencies": {
+    "uuid": "^9.0.1"
+  }
+}
