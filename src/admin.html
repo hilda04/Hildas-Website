@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Portfolio Admin · Hilda Machando</title>
+  <meta name="color-scheme" content="light dark" />
+  <style>
+    :root {
+      --bg:#0b1020;
+      --panel:#101735;
+      --ink:#e6edf9;
+      --muted:#9aa5d3;
+      --accent:#3b82f6;
+      --accent-strong:#1d4ed8;
+      --danger:#f87171;
+      --success:#34d399;
+      --radius:18px;
+      --shadow:0 24px 60px rgba(2,6,23,.35);
+    }
+    @media (prefers-color-scheme: light){
+      :root {
+        --bg:#f8fafc;
+        --panel:#ffffff;
+        --ink:#0b1020;
+        --muted:#475569;
+        --shadow:0 18px 45px rgba(2,6,23,.1);
+      }
+    }
+    *{box-sizing:border-box}
+    html, body{height:100%}
+    body{
+      margin:0;
+      font:16px/1.55 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+      background:
+        radial-gradient(900px 600px at 80% -10%, rgba(59,130,246,.18), transparent 60%),
+        radial-gradient(800px 500px at -10% 90%, rgba(236,72,153,.18), transparent 60%),
+        var(--bg);
+      color:var(--ink);
+      padding:32px 16px 40px;
+    }
+    .wrap{width:min(1100px, 96vw); margin:0 auto; display:grid; gap:24px}
+    header{display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:1rem}
+    header h1{margin:0; font-size:clamp(1.4rem, 1.2vw + 1.1rem, 2rem);}
+    header p{margin:0; color:var(--muted); max-width:560px}
+    .panel{
+      background:var(--panel);
+      border-radius:var(--radius);
+      padding:22px;
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:var(--shadow);
+    }
+    form{display:grid; gap:16px}
+    .field{display:grid; gap:6px}
+    label{font-weight:700; font-size:.95rem}
+    input[type="text"], input[type="url"], textarea{
+      appearance:none;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:12px;
+      padding:.65rem .8rem;
+      font:inherit;
+      background:rgba(11,16,32,.35);
+      color:inherit;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+    }
+    input[type="file"]{color:inherit; font:inherit}
+    textarea{min-height:120px; resize:vertical}
+    .hint{margin:0; color:var(--muted); font-size:.9rem}
+    .checkbox{display:flex; align-items:center; gap:.6rem}
+    .checkbox label{font-weight:500}
+    .actions{display:flex; flex-wrap:wrap; gap:.6rem}
+    button{
+      appearance:none; border:0; cursor:pointer; font-weight:700;
+      padding:.65rem 1.1rem; border-radius:12px;
+      background:rgba(255,255,255,.12); color:inherit;
+      transition:filter .16s ease, transform .16s ease;
+    }
+    button.primary{background:linear-gradient(135deg, var(--accent), var(--accent-strong)); color:#fff;}
+    button.danger{background:rgba(248,113,113,.16); color:#fff; border:1px solid rgba(248,113,113,.45);}
+    button:hover{filter:brightness(1.05); transform:translateY(-1px)}
+    button:disabled{opacity:.6; cursor:not-allowed; transform:none}
+    .form-status{margin:0; font-weight:600; font-size:.95rem}
+    .form-status[data-type="error"]{color:var(--danger)}
+    .form-status[data-type="success"]{color:var(--success)}
+    .form-status[data-type="warning"]{color:#fbbf24}
+    .item-list{display:grid; gap:16px}
+    .item-card{
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:16px;
+      padding:18px;
+      background:rgba(15,24,48,.55);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+      display:grid;
+      gap:12px;
+    }
+    .item-card-header{display:flex; flex-wrap:wrap; justify-content:space-between; gap:.6rem; align-items:center}
+    .item-card-actions{display:flex; gap:.4rem}
+    .item-card h3{margin:0; font-size:1.05rem}
+    .item-card p{margin:0; color:var(--muted)}
+    .item-card img{width:100%; max-height:220px; object-fit:cover; border-radius:12px; border:1px solid rgba(255,255,255,.08)}
+    .item-meta{font-size:.85rem; color:var(--muted)}
+    .pill{display:inline-flex; align-items:center; gap:.35rem; padding:.2rem .6rem; border-radius:999px; border:1px solid rgba(255,255,255,.12); font-size:.85rem; margin:.2rem .2rem 0 0}
+    .tag-row{display:flex; flex-wrap:wrap; gap:.35rem}
+    .empty{margin:0; color:var(--muted); font-style:italic}
+    .notice{margin:0; padding:14px; border-radius:14px; border:1px solid rgba(255,255,255,.1); background:rgba(59,130,246,.12);}
+    .notice strong{color:#fff}
+    #current-image-wrap{display:grid; gap:.6rem}
+    #current-image{max-width:260px; border-radius:12px; border:1px solid rgba(255,255,255,.1)}
+    .toolbar{display:flex; gap:.4rem; flex-wrap:wrap}
+    .toolbar button{padding:.45rem .8rem; font-size:.9rem}
+    .toolbar a.button-link{
+      display:inline-flex; align-items:center; justify-content:center;
+      padding:.45rem .8rem; border-radius:12px;
+      background:rgba(255,255,255,.12);
+      color:inherit; text-decoration:none; font-weight:700;
+      transition:filter .16s ease, transform .16s ease;
+    }
+    .toolbar a.button-link:hover{filter:brightness(1.05); transform:translateY(-1px)}
+    .item-card-actions{display:flex; gap:.4rem}
+    .loading{margin:0; color:var(--muted)}
+    @media (prefers-color-scheme: light){
+      input[type="text"], input[type="url"], textarea{background:rgba(255,255,255,.9); color:inherit}
+      .item-card{background:rgba(255,255,255,.9)}
+      button.danger{color:var(--danger)}
+      .notice strong{color:var(--accent-strong)}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Portfolio Admin</h1>
+        <p>Manage the projects displayed on your public site. Configure the API endpoint and admin key before making changes.</p>
+      </div>
+      <div class="toolbar">
+        <button type="button" id="refresh-btn">⟳ Refresh</button>
+        <a href="index.html" class="button-link">← Back to site</a>
+      </div>
+    </header>
+
+    <p id="config-warning" class="notice" hidden>
+      <strong>Configuration needed.</strong> Set <code>window.PORTFOLIO_API_BASE</code> (and optionally <code>window.PORTFOLIO_MEDIA_BASE</code>) before this page loads. Example:
+      <br />
+      <code>&lt;script&gt;window.PORTFOLIO_API_BASE='https://xxxxx.execute-api.us-east-1.amazonaws.com/prod'; window.PORTFOLIO_ADMIN_KEY='YOUR-ADMIN-KEY'; window.PORTFOLIO_MEDIA_BASE='https://your-bucket.s3.amazonaws.com';&lt;/script&gt;</code>
+    </p>
+
+    <section class="panel">
+      <form id="item-form">
+        <h2 id="form-title">Create new portfolio item</h2>
+        <div class="field">
+          <label for="title">Title</label>
+          <input id="title" name="title" type="text" required maxlength="200" placeholder="e.g. Zero Trust Automation" />
+        </div>
+        <div class="field">
+          <label for="summary">Summary</label>
+          <textarea id="summary" name="summary" required maxlength="500" placeholder="Short description shown on the site."></textarea>
+        </div>
+        <div class="field">
+          <label for="link">External link</label>
+          <input id="link" name="link" type="url" placeholder="https://" />
+          <p class="hint">Optional link to the case study or repository.</p>
+        </div>
+        <div class="field">
+          <label for="tags">Tags</label>
+          <input id="tags" name="tags" type="text" placeholder="risk, automation, aws" />
+          <p class="hint">Comma-separated keywords. Displayed as badges.</p>
+        </div>
+        <div class="checkbox">
+          <label><input id="featured" name="featured" type="checkbox" /> Feature this project</label>
+        </div>
+        <div class="field">
+          <label for="image">Project image</label>
+          <input id="image" name="image" type="file" accept="image/*" />
+          <p class="hint">Upload to set or replace the image. Leave empty to keep the current image.</p>
+        </div>
+        <div id="current-image-wrap" hidden>
+          <p class="hint">Current image preview</p>
+          <img id="current-image" alt="Current project image" />
+        </div>
+        <div class="actions">
+          <button type="submit" class="primary" id="save-btn">Save item</button>
+          <button type="button" id="reset-btn">Reset</button>
+        </div>
+        <p id="form-status" class="form-status" hidden></p>
+      </form>
+    </section>
+
+    <section class="panel">
+      <h2>Published items</h2>
+      <p id="loading-state" class="loading">Connect to your API and click refresh.</p>
+      <p id="empty-state" class="empty" hidden>No portfolio items yet. Create one above.</p>
+      <div id="items-list" class="item-list" aria-live="polite"></div>
+    </section>
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>
