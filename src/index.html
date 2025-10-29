@@ -494,190 +494,147 @@
         };
       })();
 
-      (function blogLoader(){
-        const container = document.getElementById('blog-posts');
-        if (!container) return;
+    // Blog posts loader — fetch latest Medium entries
+    (function(){
+      const container = document.getElementById('blog-posts');
+      if (!container) return;
 
-        const FEED_URL = 'https://medium.com/feed/@hildamachando4';
-        const PROXY_URL = `https://api.allorigins.win/raw?url=${encodeURIComponent(FEED_URL)}`;
+      const FEED_URL = 'https://medium.com/feed/@hildamachando4';
+      const PROXY_URL = `https://api.allorigins.win/raw?url=${encodeURIComponent(FEED_URL)}`;
 
-        let loaded = false;
-        let loadingPromise = null;
+      let loaded = false;
+      let loadingPromise = null;
 
-        function setStatus(message, isError) {
-          replaceWithStatus(container, 'blog-status', message, isError);
+      function setStatus(message, isError){
+        container.innerHTML = `<p class="blog-status${isError ? ' error' : ''}">${message}</p>`;
+      }
+
+      function clean(html){
+        if (!html) return '';
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const text = doc.body ? doc.body.textContent || '' : html;
+        return text.replace(/\s+/g, ' ').trim();
+      }
+
+      function truncate(text){
+        const max = 180;
+        if (text.length <= max) return text;
+        return `${text.slice(0, max - 1).trim()}…`;
+      }
+
+      function render(items){
+        if (!items.length){
+          setStatus('No posts found yet. Please check back soon.', false);
+          return;
         }
+        const markup = items.map(item => {
+          const time = item.dateLabel ? `<time datetime="${item.dateISO}">${item.dateLabel}</time>` : '';
+          const snippet = item.snippet ? `<p>${item.snippet}</p>` : '';
+          return `<article class="blog-card">
+            ${time}
+            <h3><a href="${item.link}" target="_blank" rel="noopener">${item.title}</a></h3>
+            ${snippet}
+            <a class="blog-link" href="${item.link}" target="_blank" rel="noopener">Read on Medium →</a>
+          </article>`;
+        }).join('');
+        container.innerHTML = markup;
+      }
 
-        function clean(html) {
-          if (!html) return '';
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(html, 'text/html');
-          const text = doc.body ? doc.body.textContent || '' : html;
-          return text.replace(/\s+/g, ' ').trim();
-        }
+      function parseFeed(text){
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(text, 'application/xml');
+        const parseError = xml.querySelector('parsererror');
+        if (parseError) throw new Error('Failed to parse feed.');
 
-        function truncate(text) {
-          const max = 180;
-          if (text.length <= max) return text;
-          return `${text.slice(0, max - 1).trim()}…`;
-        }
+        return Array.from(xml.querySelectorAll('item')).slice(0, 6).map(item => {
+          const title = (item.querySelector('title')?.textContent || 'Untitled').trim();
+          const link = (item.querySelector('link')?.textContent || 'https://medium.com/@hildamachando4').trim();
+          const pubDate = item.querySelector('pubDate')?.textContent || '';
+          const date = pubDate ? new Date(pubDate) : null;
+          const description = item.querySelector('description')?.textContent || item.querySelector('content\\:encoded')?.textContent || '';
+          const snippet = truncate(clean(description));
+          const isDateValid = date instanceof Date && !Number.isNaN(date.valueOf());
+          const dateLabel = isDateValid ? date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : '';
+          const dateISO = isDateValid ? date.toISOString() : '';
+          return { title, link, dateLabel, dateISO, snippet };
+        });
+      }
 
-        function render(items) {
-          if (!items.length) {
-            setStatus('No posts found yet. Please check back soon.', false);
-            return;
-          }
+      function load(){
+        if (loaded) return Promise.resolve();
+        if (loadingPromise) return loadingPromise;
 
-          const fragment = document.createDocumentFragment();
-          items.forEach(item => {
-            const href = isSafeUrl(item.link) ? item.link : '#';
+        setStatus('Loading latest posts…', false);
 
-            const article = document.createElement('article');
-            article.className = 'blog-card';
-
-            if (item.dateLabel) {
-              const time = document.createElement('time');
-              if (item.dateISO) time.dateTime = item.dateISO;
-              time.textContent = item.dateLabel;
-              article.appendChild(time);
-            }
-
-            const heading = document.createElement('h3');
-            const headingLink = document.createElement('a');
-            headingLink.href = href;
-            headingLink.target = '_blank';
-            headingLink.rel = 'noopener noreferrer';
-            headingLink.textContent = item.title;
-            heading.appendChild(headingLink);
-            article.appendChild(heading);
-
-            if (item.snippet) {
-              const paragraph = document.createElement('p');
-              paragraph.textContent = item.snippet;
-              article.appendChild(paragraph);
-            }
-
-            const readLink = document.createElement('a');
-            readLink.className = 'blog-link';
-            readLink.href = href;
-            readLink.target = '_blank';
-            readLink.rel = 'noopener noreferrer';
-            readLink.textContent = 'Read on Medium →';
-            article.appendChild(readLink);
-
-            fragment.appendChild(article);
+        loadingPromise = fetch(PROXY_URL)
+          .then(res => {
+            if (!res.ok) throw new Error(`Failed to fetch feed: ${res.status}`);
+            return res.text();
+          })
+          .then(text => {
+            const items = parseFeed(text);
+            render(items);
+            loaded = true;
+          })
+          .catch(err => {
+            console.error(err);
+            setStatus('Unable to load Medium posts right now. Please try again later.', true);
+            loaded = false;
+            throw err;
+          })
+          .finally(() => {
+            loadingPromise = null;
           });
 
-          container.replaceChildren(fragment);
-        }
+        return loadingPromise;
+      }
 
-        function parseFeed(text) {
-          const parser = new DOMParser();
-          const xml = parser.parseFromString(text, 'application/xml');
-          const parseError = xml.querySelector('parsererror');
-          if (parseError) throw new Error('Failed to parse feed.');
+      function ensureLoaded(){
+        load().catch(() => {});
+      }
 
-          return Array.from(xml.querySelectorAll('item')).slice(0, 6).map(item => {
-            const title = (item.querySelector('title')?.textContent || 'Untitled').trim();
-            const link = (item.querySelector('link')?.textContent || '').trim();
-            const pubDate = item.querySelector('pubDate')?.textContent || '';
-            const date = pubDate ? new Date(pubDate) : null;
-            const description = item.querySelector('description')?.textContent || item.querySelector('content\:encoded')?.textContent || '';
-            const snippet = truncate(clean(description));
-            const isDateValid = date instanceof Date && !Number.isNaN(date.valueOf());
-            const dateLabel = isDateValid ? date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : '';
-            const dateISO = isDateValid ? date.toISOString() : '';
-            return { title, link: isSafeUrl(link) ? link : '', dateLabel, dateISO, snippet };
-          }).filter(item => Boolean(item.link));
-        }
+      function hashIsBlog(){
+        const hash = location.hash.replace(/^#\/?/, '');
+        return (hash || 'home') === 'blog';
+      }
 
-        function load() {
-          if (loaded) return Promise.resolve();
-          if (loadingPromise) return loadingPromise;
-
-          setStatus('Loading latest posts…', false);
-
-          loadingPromise = safeFetch(PROXY_URL)
-            .then(res => {
-              if (!res.ok) throw new Error(`Failed to fetch feed: ${res.status}`);
-              return res.text();
-            })
-            .then(text => {
-              const items = parseFeed(text);
-              render(items);
-              loaded = true;
-            })
-            .catch(err => {
-              console.error(err);
-              setStatus('Unable to load Medium posts right now. Please try again later.', true);
-              loaded = false;
-              throw err;
-            })
-            .finally(() => {
-              loadingPromise = null;
-            });
-
-          return loadingPromise;
-        }
-
-        function ensureLoaded() {
-          load().catch(() => {});
-        }
-
-        function hashIsBlog() {
-          const hash = location.hash.replace(/^#\/?/, '');
-          return (hash || 'home') === 'blog';
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-          if (hashIsBlog()) ensureLoaded();
-          document.querySelectorAll('[data-link][href="#/blog"]').forEach(link => {
-            link.addEventListener('click', ensureLoaded);
-          });
+      document.addEventListener('DOMContentLoaded', () => {
+        if (hashIsBlog()) ensureLoaded();
+        document.querySelectorAll('[data-link][href="#/blog"]').forEach(link => {
+          link.addEventListener('click', ensureLoaded);
         });
+      });
 
-        window.addEventListener('hashchange', () => {
-          if (hashIsBlog()) ensureLoaded();
-        });
+      window.addEventListener('hashchange', () => {
+        if (hashIsBlog()) ensureLoaded();
+      });
 
-        window.__ensureBlogLoaded = ensureLoaded;
-      })();
+      window.__ensureBlogLoaded = ensureLoaded;
+    })();
 
-      (function router(){
-        const views = {
-          home: document.getElementById('home'),
-          cv: document.getElementById('cv'),
-          projects: document.getElementById('projects'),
-          blog: document.getElementById('blog')
-        };
+    // Tiny hash router — no dependencies
+    (function(){
+      const views = {
+        home: document.getElementById('home'),
+        cv: document.getElementById('cv'),
+        projects: document.getElementById('projects'),
+        blog: document.getElementById('blog')
+      };
         const all = Object.values(views);
-        const ctas = Array.from(document.querySelectorAll('.ctas [data-link]'));
 
-        function updateCtas(id){
-          if (!ctas.length) return;
-          ctas.forEach(link => {
-            const target = link.getAttribute('href') || '';
-            const targetId = target.replace(/^#\/?/, '') || 'home';
-            if (targetId === id) {
-              link.classList.add('is-active');
-            } else {
-              link.classList.remove('is-active');
-            }
-          });
+      function activate(id){
+        all.forEach(v => v.classList.remove('active'));
+        (views[id] || views.home).classList.add('active');
+        document.querySelectorAll('nav a').forEach(a=>{
+          const isCurrent = a.getAttribute('href') === `#/${id}` || (id==='home' && a.getAttribute('href')==='#/home');
+          a.setAttribute('aria-current', isCurrent ? 'page' : 'false');
+        });
+        if (id === 'blog' && typeof window.__ensureBlogLoaded === 'function'){
+          window.__ensureBlogLoaded();
         }
+      }
 
-        function activate(id){
-          all.forEach(v => v.classList.remove('active'));
-          (views[id] || views.home).classList.add('active');
-          document.querySelectorAll('nav a').forEach(a=>{
-            const isCurrent = a.getAttribute('href') === `#/${id}` || (id==='home' && a.getAttribute('href')==='#/home');
-            a.setAttribute('aria-current', isCurrent ? 'page' : 'false');
-          });
-          updateCtas(id);
-          if (id === 'blog' && typeof window.__ensureBlogLoaded === 'function'){
-            window.__ensureBlogLoaded();
-          }
-        }
 
         function parse(){
           const hash = location.hash.replace('#','');
