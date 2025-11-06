@@ -9,6 +9,8 @@
   <meta http-equiv="X-Frame-Options" content="DENY" />
   <meta http-equiv="Permissions-Policy" content="accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()" />
   <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin" />
+  <link rel="icon" type="image/svg+xml" href="assets/hfm-favicon.svg" />
+  <link rel="alternate icon" href="assets/hfm-favicon.svg" />
   <title>Hilda Machando — Cloud Security | GRC </title>
   <meta name="color-scheme" content="light dark" />
   <style>
@@ -67,12 +69,24 @@
     /* Home */
     .home{display:grid; place-items:center; text-align:center; padding: clamp(28px, 5vw, 48px)}
     .intro{display:grid; justify-items:center; gap:1.4rem}
-    .portrait{width:160px; height:160px; border-radius:50%; padding:6px; background:linear-gradient(135deg, rgba(59,130,246,.55), rgba(236,72,153,.55)); box-shadow:0 18px 36px rgba(15,24,48,.45); display:grid; place-items:center}
+    .portrait{width:160px; height:160px; border-radius:50%; padding:6px; background:linear-gradient(135deg, rgba(59,130,246,.55), rgba(236,72,153,.55)); box-shadow:0 18px 36px rgba(15,24,48,.45); display:grid; place-items:center; border:0; cursor:zoom-in; color:inherit}
+    .portrait:focus{outline:none}
+    .portrait:focus-visible{outline:3px solid rgba(236,72,153,.7); outline-offset:6px}
     .portrait-inner{width:100%; height:100%; border-radius:50%; overflow:hidden; background:rgba(15,24,48,.45); display:grid; place-items:center; position:relative}
     .portrait img{width:100%; height:100%; object-fit:cover; display:block}
     .portrait span{position:absolute; inset:0; display:grid; place-items:center; font-weight:900; font-size:2.2rem; letter-spacing:.08em; color:rgba(230,237,249,.92); text-shadow:0 6px 18px rgba(11,16,32,.55); opacity:0; transition:opacity .2s ease}
     .portrait-fallback img{display:none}
     .portrait-fallback span{opacity:1}
+    .sr-only{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0}
+    .portrait-modal{position:fixed; inset:0; display:flex; align-items:center; justify-content:center; padding: clamp(24px, 6vw, 72px); background:rgba(8,15,35,.78); z-index:1000}
+    .portrait-modal[hidden]{display:none}
+    .portrait-modal__dialog{position:relative; background:var(--card); border-radius:24px; padding: clamp(18px, 4vw, 32px); box-shadow:0 28px 60px rgba(2,6,23,.55); max-width:min(540px, 90vw); width:100%; display:grid; gap:16px}
+    .portrait-modal__dialog img{width:100%; height:auto; border-radius:20px; display:block}
+    .portrait-modal__close{position:absolute; top:12px; right:12px; border:0; background:rgba(15,24,48,.6); color:var(--ink); width:40px; height:40px; border-radius:50%; font-size:1.4rem; font-weight:600; cursor:pointer; display:grid; place-items:center; transition:background .2s ease, transform .2s ease}
+    .portrait-modal__close:hover{background:rgba(59,130,246,.55); transform:translateY(-1px)}
+    .portrait-modal__close:focus{outline:none}
+    .portrait-modal__close:focus-visible{outline:3px solid rgba(236,72,153,.8); outline-offset:3px}
+    body.no-scroll{overflow:hidden}
     .hero{font-size: clamp(28px, 4.4vw, 42px); line-height:1.08; margin:0}
     .tag{margin:.4rem 0 1.2rem; color:var(--muted)}
 
@@ -226,12 +240,13 @@
       <!-- HOME -->
       <section id="home" class="view home active" aria-labelledby="h-home">
         <div class="intro">
-          <div class="portrait" data-portrait>
+          <button class="portrait" data-portrait type="button" aria-haspopup="dialog" aria-controls="portrait-modal">
+            <span class="sr-only">Expand portrait of Hilda Machando</span>
             <div class="portrait-inner">
               <img src="assets/hilda-portrait.png" alt="Portrait of Hilda Machando" loading="lazy" />
               <span aria-hidden="true">HFM</span>
             </div>
-          </div>
+          </button>
           <h1 id="h-home" class="hero">Hi, I’m Hilda: I secure clouds and simplify risk.</h1>
           <p class="tag">Explore my CV and projects below.</p>
         </div>
@@ -301,6 +316,13 @@
         </nav>
       </section>
     </main>
+  </div>
+
+  <div class="portrait-modal" data-portrait-modal id="portrait-modal" aria-hidden="true" hidden>
+    <div class="portrait-modal__dialog" role="dialog" aria-modal="true" aria-label="Portrait of Hilda Machando">
+      <button type="button" class="portrait-modal__close" data-portrait-close aria-label="Close portrait">×</button>
+      <img data-portrait-modal-img src="assets/hilda-portrait.png" alt="Portrait of Hilda Machando" />
+    </div>
   </div>
 
    <script nonce="hm2024">
@@ -420,6 +442,63 @@
             }
           }
         });
+
+        const portraitButtons = document.querySelectorAll('[data-portrait]');
+        const modal = document.querySelector('[data-portrait-modal]');
+        if (modal && portraitButtons.length) {
+          const modalImage = modal.querySelector('[data-portrait-modal-img]');
+          const closeButton = modal.querySelector('[data-portrait-close]');
+          let lastFocusedTrigger = null;
+
+          const openModal = (img, trigger) => {
+            if (!modalImage) return;
+            const src = img.currentSrc || img.src;
+            if (src) modalImage.src = src;
+            modalImage.alt = img.alt || 'Portrait';
+            modal.hidden = false;
+            modal.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('no-scroll');
+            lastFocusedTrigger = trigger;
+            if (closeButton && typeof closeButton.focus === 'function') {
+              closeButton.focus();
+            }
+          };
+
+          const closeModal = () => {
+            if (modal.hidden) return;
+            modal.setAttribute('aria-hidden', 'true');
+            modal.hidden = true;
+            document.body.classList.remove('no-scroll');
+            if (lastFocusedTrigger && typeof lastFocusedTrigger.focus === 'function') {
+              lastFocusedTrigger.focus();
+            }
+          };
+
+          portraitButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+              const img = btn.querySelector('img');
+              if (!img) return;
+              openModal(img, btn);
+            });
+          });
+
+          if (closeButton) {
+            closeButton.addEventListener('click', closeModal);
+          }
+
+          modal.addEventListener('click', (event) => {
+            if (event.target === modal) {
+              closeModal();
+            }
+          });
+
+          document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && !modal.hidden) {
+              event.preventDefault();
+              closeModal();
+            }
+          });
+        }
       });
 
       (function cvLoader(){
